@@ -1,7 +1,4 @@
-"""Search Tool 实现。
-
-当前内置 DuckDuckGo（基于 ddgs 库），后续可扩展 Tavily、Google 等。
-"""
+"""Search tool — DuckDuckGo search with pluggable search engine architecture."""
 
 from __future__ import annotations
 
@@ -16,7 +13,7 @@ from research_agent.tools.models import SearchResult
 
 
 class BaseSearchClient(ABC):
-    """搜索客户端抽象基类。"""
+    """Abstract base class for search engine clients."""
 
     @abstractmethod
     def search(self, query: str, max_results: int = 5) -> list[SearchResult]:
@@ -28,7 +25,7 @@ class BaseSearchClient(ABC):
 
 
 class DuckDuckGoSearchClient(BaseSearchClient):
-    """DuckDuckGo 搜索（基于 ddgs 库）。"""
+    """DuckDuckGo search via the ddgs library (no API key required)."""
 
     def search(self, query: str, max_results: int = 5) -> list[SearchResult]:
         try:
@@ -37,7 +34,7 @@ class DuckDuckGoSearchClient(BaseSearchClient):
                     ddgs.text(query, max_results=max_results)
                 )
         except Exception as e:
-            raise RuntimeError(f"DuckDuckGo 搜索失败: {e}") from e
+            raise RuntimeError(f"DuckDuckGo search failed: {e}") from e
 
         return [
             SearchResult(
@@ -61,19 +58,19 @@ _REGISTRY: dict[str, type[BaseSearchClient]] = {
 
 
 def register_search_engine(name: str, client_cls: type[BaseSearchClient]) -> None:
-    """注册新的搜索引擎（扩展用）。"""
+    """Register a new search engine (extensibility hook)."""
     _REGISTRY[name] = client_cls
 
 
 def get_search_client(engine: str | None = None) -> BaseSearchClient:
-    """获取搜索客户端实例。
+    """Get a search client instance.
 
     Args:
-        engine: 搜索引擎名称，默认读取 .env 中 SEARCH_ENGINE 配置。
+        engine: Engine name. Defaults to SEARCH_ENGINE in .env.
     """
     engine = engine or settings.search_engine
     client_cls = _REGISTRY.get(engine)
     if client_cls is None:
-        raise ValueError(f"不支持的搜索引擎: {engine}")
+        raise ValueError(f"Unsupported search engine: {engine}")
 
     return client_cls()

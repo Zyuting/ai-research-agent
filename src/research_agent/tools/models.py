@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 
 @dataclass
 class SearchResult:
-    """搜索单条结果。"""
+    """A single search result entry."""
     title: str
     url: str
     snippet: str
@@ -15,7 +15,7 @@ class SearchResult:
 
 @dataclass
 class WebPage:
-    """网页读取结果。"""
+    """Fetched web page content."""
     url: str
     title: str
     content: str

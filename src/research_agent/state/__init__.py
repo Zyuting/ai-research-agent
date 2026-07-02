@@ -1,8 +1,8 @@
-"""LangGraph State 定义。
+"""LangGraph state definition.
 
-节点之间只通过 State 传递数据，不直接相互调用。
+Nodes communicate exclusively through State — no direct function calls.
 
-Flow: topic → search_queries → search_results → web_pages → summary → report
+Data flow: topic → search_queries → search_results → web_pages → summary → report
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ from research_agent.tools.models import SearchResult, WebPage
 
 
 class ResearchState(TypedDict):
-    """研究助手全局状态。"""
+    """Global state for the research agent."""
 
     # Input
     topic: str

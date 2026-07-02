@@ -1,4 +1,8 @@
-"""OpenAI Compatible API 实现（通义千问、GPT、DeepSeek 等均可通过此接口调用）。"""
+"""OpenAI-compatible API implementation.
+
+Works with Qwen (DashScope), GPT, DeepSeek, and any other
+OpenAI Chat Completions-compatible API.
+"""
 
 from __future__ import annotations
 
@@ -30,7 +34,7 @@ _ERROR_MAP: dict[tuple[int, str], type] = {
 
 
 def _map_error(exc: APIStatusError) -> LLMError:
-    """将 openai SDK 异常映射为业务异常。"""
+    """Map openai SDK exceptions to domain exceptions."""
     status_code = exc.status_code
     error_code = ""
     if exc.body and isinstance(exc.body, dict):
@@ -40,7 +44,6 @@ def _map_error(exc: APIStatusError) -> LLMError:
     if mapped:
         return mapped(str(exc))
 
-    # 兜底：4xx → 请求错误，5xx → 临时错误
     if 400 <= status_code < 500:
         return LLMBadRequestError(str(exc))
     if status_code >= 500:
@@ -50,19 +53,19 @@ def _map_error(exc: APIStatusError) -> LLMError:
 
 
 def _build_client(api_key: str, base_url: str) -> OpenAI:
-    """构建 OpenAI 客户端。"""
+    """Build an OpenAI client."""
     if not api_key:
         raise LLMConfigurationError(
-            "API Key 未配置，请设置 DASHSCOPE_API_KEY 环境变量"
+            "API key is not configured. Set DASHSCOPE_API_KEY in .env"
         )
     return OpenAI(api_key=api_key, base_url=base_url)
 
 
 class OpenAICompatibleClient(BaseLLMClient):
-    """OpenAI Compatible API LLM 客户端。
+    """OpenAI-compatible LLM client.
 
-    兼容通义千问（DashScope）、GPT、DeepSeek 等所有
-    实现了 OpenAI Chat Completions 接口的模型服务。
+    Supports Qwen (DashScope), GPT, DeepSeek, and any other
+    service implementing the OpenAI Chat Completions interface.
     """
 
     def __init__(
@@ -115,7 +118,7 @@ class OpenAICompatibleClient(BaseLLMClient):
 
     @property
     def _async_client(self):
-        """延迟初始化的 async client。"""
+        """Lazily initialized async client."""
         try:
             return self.__async_client
         except AttributeError:

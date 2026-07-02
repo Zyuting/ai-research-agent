@@ -1,4 +1,4 @@
-"""LLM 抽象基类与统一返回值定义。"""
+"""LLM abstract base class and unified response type."""
 
 from __future__ import annotations
 
@@ -9,25 +9,25 @@ from typing import Any
 
 @dataclass
 class LLMResponse:
-    """统一的 LLM 调用返回值。"""
+    """Unified LLM call response."""
     content: str
     model: str
     usage: dict[str, int] = field(default_factory=dict)
 
 
 class BaseLLMClient(ABC):
-    """LLM 客户端抽象基类。
+    """Abstract base class for LLM clients.
 
-    所有 LLM 实现（通义千问、GPT、DeepSeek 等）继承此类，
-    调用方通过工厂函数 get_llm() 获取实例，不感知具体实现。
+    All LLM implementations (Qwen, GPT, DeepSeek, etc.) inherit from this.
+    Callers obtain instances via get_llm() factory — never instantiate directly.
     """
 
     @abstractmethod
     def invoke(self, message: str, **kwargs: Any) -> LLMResponse:
-        """同步调用。"""
+        """Synchronous call."""
         ...
 
     @abstractmethod
     async def ainvoke(self, message: str, **kwargs: Any) -> LLMResponse:
-        """异步调用。"""
+        """Asynchronous call."""
         ...

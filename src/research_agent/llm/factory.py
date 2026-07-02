@@ -1,6 +1,7 @@
-"""LLM 客户端工厂函数。
+"""LLM client factory.
 
-调用方通过 get_llm() 获取实例，不感知具体实现类。
+Callers use get_llm() to obtain an instance. The concrete implementation
+is determined by configuration — callers never instantiate clients directly.
 """
 
 from __future__ import annotations
@@ -17,23 +18,23 @@ _REGISTRY: dict[str, type[BaseLLMClient]] = {
 
 
 def register_provider(name: str, client_cls: type[BaseLLMClient]) -> None:
-    """注册新的 LLM 提供商（扩展用）。"""
+    """Register a new LLM provider (extensibility hook)."""
     _REGISTRY[name] = client_cls
 
 
 def get_llm(provider: str | None = None) -> BaseLLMClient:
-    """获取 LLM 客户端实例。
+    """Get an LLM client instance.
 
     Args:
-        provider: 提供商名称，默认从配置读取 LLM_PROVIDER（当前仅支持 "openai"）。
+        provider: Provider name. Defaults to LLM_PROVIDER from .env.
 
-    通义千问、GPT、DeepSeek 等均走 OpenAI Compatible API，
-    只需修改 .env 中的 LLM_BASE_URL 和 LLM_MODEL 即可切换。
+    Qwen, GPT, DeepSeek all use the OpenAI-compatible protocol.
+    Switch models by changing LLM_BASE_URL and LLM_MODEL in .env.
     """
     provider = provider or settings.llm_provider
     client_cls = _REGISTRY.get(provider)
     if client_cls is None:
-        raise LLMConfigurationError(f"不支持的 LLM 提供商：{provider}")
+        raise LLMConfigurationError(f"Unsupported LLM provider: {provider}")
 
     return client_cls(
         api_key=settings.dashscope_api_key,

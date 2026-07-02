@@ -1,4 +1,4 @@
-"""Prompt 加载工具。"""
+"""Prompt loader — loads .txt templates and renders with variables."""
 
 from __future__ import annotations
 
@@ -8,14 +8,14 @@ _PROMPTS_DIR = pathlib.Path(__file__).parent
 
 
 def load_prompt(name: str, **kwargs: str) -> str:
-    """加载 prompt 模板并填充变量。
+    """Load a prompt template and fill in variables.
 
     Args:
-        name: 模板文件名（不含路径，如 planner.txt）。
-        **kwargs: 模板变量值。
+        name: Template filename (e.g., planner.txt).
+        **kwargs: Template variable values.
 
     Returns:
-        填充后的 prompt 字符串。
+        Rendered prompt string.
     """
     path = _PROMPTS_DIR / name
     template = path.read_text(encoding="utf-8")
@@ -23,5 +23,5 @@ def load_prompt(name: str, **kwargs: str) -> str:
 
 
 def list_prompts() -> list[str]:
-    """列出所有可用的 prompt 模板。"""
+    """List all available prompt templates."""
     return sorted(p.name for p in _PROMPTS_DIR.glob("*.txt"))

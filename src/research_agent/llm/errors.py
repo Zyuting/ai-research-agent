@@ -1,25 +1,25 @@
-"""LLM 调用相关的异常层次结构。"""
+"""LLM error hierarchy — maps provider-specific errors to domain exceptions."""
 
 
 class LLMError(Exception):
-    """LLM 调用基类异常。"""
+    """Base exception for all LLM-related errors."""
 
 
 class LLMConfigurationError(LLMError):
-    """API Key / Base URL 等配置错误。"""
+    """Missing or invalid configuration (API key, base URL, etc.)."""
 
 
 class LLMAuthenticationError(LLMError):
-    """认证失败（API Key 无效或过期）。"""
+    """Authentication failure — invalid or expired API key."""
 
 
 class LLMRateLimitError(LLMError):
-    """触发频率限制。"""
+    """Rate limit exceeded."""
 
 
 class LLMBadRequestError(LLMError):
-    """请求参数错误（model 不存在、prompt 过长等）。"""
+    """Invalid request — unsupported model, context length exceeded, etc."""
 
 
 class LLMTemporaryError(LLMError):
-    """服务端临时故障，可重试。"""
+    """Transient server error — safe to retry."""

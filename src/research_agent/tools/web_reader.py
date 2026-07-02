@@ -1,9 +1,7 @@
-"""Web Reader Tool 实现。
+"""Web reader tool — HTML content extractor with noise removal and auto-fallback.
 
-当前内置基于 httpx + BeautifulSoup 的 HTML 抓取器，
-优先提取正文区域（<article> / <main>），去除导航、广告等干扰元素。
-
-备用策略：如果 httpx 请求被 403 拒绝，自动降级为 verify=False + 备用 UA 重试。
+Prioritizes <article> / <main> regions, strips navigation and ads.
+Auto-fallback on 403: retries with a different User-Agent and verify=False.
 """
 
 from __future__ import annotations
@@ -41,7 +39,7 @@ _REMOVE_PATTERNS = re.compile(
 
 
 class BaseWebReader(ABC):
-    """网页读取器抽象基类。"""
+    """Abstract base class for web page readers."""
 
     @abstractmethod
     def read(self, url: str) -> WebPage:
@@ -53,7 +51,13 @@ class BaseWebReader(ABC):
 
 
 class HtmlWebReader(BaseWebReader):
-    """基于 httpx + BeautifulSoup 的 HTML 网页读取器。"""
+    """HTML web page reader using httpx + BeautifulSoup.
+
+    Features:
+    - Extracts title and main content from <article> / <main> / <body>
+    - Removes navigation, ads, scripts, and other noise elements
+    - Auto-fallback on 403 or connection errors
+    """
 
     def __init__(
         self,
@@ -73,7 +77,7 @@ class HtmlWebReader(BaseWebReader):
     # ---- private ----
 
     def _read_with_fallback(self, url: str) -> WebPage:
-        """带备用策略的网页读取。"""
+        """Read with fallback strategy for 403 and connection errors."""
         try:
             return self._request_and_parse(url, verify=True, ua=_USER_AGENT)
         except httpx.HTTPStatusError as e:
@@ -83,7 +87,6 @@ class HtmlWebReader(BaseWebReader):
                 )
             raise
         except httpx.ConnectError:
-            # SSL 握手失败等连接问题，重试一次
             return self._request_and_parse(
                 url, verify=False, ua=_USER_AGENT
             )
@@ -118,6 +121,7 @@ class HtmlWebReader(BaseWebReader):
 
     @staticmethod
     def _remove_noise(soup: BeautifulSoup) -> None:
+        """Remove unwanted tags and advertisement regions."""
         for tag in _REMOVE_TAGS:
             for el in soup.find_all(tag):
                 el.decompose()
@@ -136,6 +140,7 @@ class HtmlWebReader(BaseWebReader):
 
     @staticmethod
     def _extract_content(soup: BeautifulSoup) -> str:
+        """Extract main content from the page body."""
         container: Tag | None = (
             soup.find("article")
             or soup.find("main")
@@ -177,5 +182,5 @@ def get_web_reader(reader_type: str | None = None) -> BaseWebReader:
     reader_type = reader_type or "html"
     client_cls = _REGISTRY.get(reader_type)
     if client_cls is None:
-        raise ValueError(f"不支持的网页读取器: {reader_type}")
+        raise ValueError(f"Unsupported web reader: {reader_type}")
     return client_cls()
