@@ -1,4 +1,4 @@
-"""Reader Node - 遍历搜索结果，并发抓取网页正文。"""
+"""Reader node — concurrently fetch pages from search results."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from research_agent.tools import WebPage, get_web_reader
 
 
 def _read_one(url: str) -> WebPage | None:
-    """读取单个页面，失败返回 None。"""
+    """Fetch a single page, return None on failure."""
     try:
         reader = get_web_reader()
         return reader.read(url)
@@ -18,7 +18,7 @@ def _read_one(url: str) -> WebPage | None:
 
 
 async def _read_all(urls: list[str]) -> list[WebPage]:
-    """并发读取多个页面，过滤过短的内容。"""
+    """Concurrently fetch multiple pages, discard too-short content."""
     loop = asyncio.get_running_loop()
     tasks = [loop.run_in_executor(None, _read_one, u) for u in urls]
     results = await asyncio.gather(*tasks)
@@ -26,7 +26,7 @@ async def _read_all(urls: list[str]) -> list[WebPage]:
 
 
 def reader_node(state: ResearchState) -> dict:
-    """并行抓取搜索结果中的网页。"""
+    """Fetch web pages from search results in parallel."""
     urls = [r.url for r in state.get("search_results", []) if r.url.startswith("http")]
     if not urls:
         return {"web_pages": [], "errors": state.get("errors", [])}
@@ -35,6 +35,6 @@ def reader_node(state: ResearchState) -> dict:
 
     errors = state.get("errors", []).copy()
     if not pages:
-        errors.append("Reader: 所有页面均读取失败（被反爬拦截或网络不可达）")
+        errors.append("Reader: all pages failed to load (blocked or unreachable)")
 
     return {"web_pages": pages, "errors": errors}

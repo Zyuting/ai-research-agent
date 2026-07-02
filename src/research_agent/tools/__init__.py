@@ -1,4 +1,8 @@
-"""Tools - Search & Web Reader 统一导出。"""
+"""Tools — Search & Web Reader.
+
+Each tool has an abstract base class and a concrete implementation.
+Register custom implementations via register_*() functions.
+"""
 
 from research_agent.tools.models import SearchResult, WebPage
 from research_agent.tools.search import (

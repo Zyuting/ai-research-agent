@@ -1,9 +1,14 @@
 [project]
 name = "research-agent"
-version = "0.1.0"
-description = "AI Research Agent based on LangGraph"
+version = "1.0.0"
+description = "AI Research Agent - Automated research powered by LangGraph and LLMs"
+readme = "README.md"
 requires-python = ">=3.11"
 dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/Zyuting/ai-research-agent"
+Repository = "https://github.com/Zyuting/ai-research-agent"
 
 [build-system]
 requires = ["setuptools>=69.0"]
@@ -11,3 +16,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

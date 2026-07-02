@@ -1,153 +1,266 @@
-# Research Agent
+<div align="center">
 
-基于 LangGraph 和通义千问 API 的 AI 研究助手。
+# Research Agent 🧠📄
 
-## 功能
+**AI-powered research assistant** — Input a topic, get a structured Markdown report.
 
-- **自动研究** — 输入主题，Agent 自动完成搜索、阅读、分析、报告全流程
-- **多引擎搜索** — 默认 DuckDuckGo（免 API Key），可扩展 Tavily、Google 等
-- **结构化报告** — 输出 Markdown 格式研究报告，含概述、主体分析、总结与参考来源
-- **模块化架构** — 基于 LangGraph 的节点化工作流，便于扩展
+Automates the full research pipeline: **search → read → summarize → write**.
 
-## 快速开始
+[![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
+[![LangGraph](https://img.shields.io/badge/LangGraph-%20-purple)](https://langchain-ai.github.io/langgraph/)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](https://github.com/Zyuting/ai-research-agent/pulls)
 
-```bash
-# 1. 克隆项目
-git clone https://github.com/your/repo.git
-cd research-agent
+</div>
 
-# 2. 创建虚拟环境
-python -m venv .venv
-source .venv/bin/activate       # Linux/Mac
-.venv\Scripts\activate          # Windows
+---
 
-# 3. 安装依赖
-pip install -r requirements.txt
+## ✨ Features
 
-# 4. 配置环境变量
-cp .env.example .env
-# 编辑 .env，填入 DASHSCOPE_API_KEY
+- **End-to-end automation** — One topic in, full report out. No manual searching or reading.
+- **LLM-powered planning** — Generates optimal search queries from your topic.
+- **Multi-engine search** — DuckDuckGo built-in (zero config), pluggable architecture for Tavily, Google, etc.
+- **Intelligent web reading** — Extracts main content, strips ads/navigation. Auto-fallback on 403.
+- **Structured reports** — Markdown output with overview, analysis, conclusion, and references.
+- **Model-agnostic** — Switch between Qwen, GPT, DeepSeek, or any OpenAI-compatible API via `.env`.
+- **Modular & extensible** — Abstract base classes + Registry pattern. Add new search engines, readers, or LLM providers without touching core logic.
 
-# 5. 运行
-python -m research_agent "你的研究主题"
+---
+
+## 🏗️ System Architecture
+
+The project follows a **layered, decoupled architecture**:
+
+```
+┌──────────────────────────────────────────┐
+│              CLI / Scripts                │
+│         (__main__.py / scripts/)          │
+├──────────────────────────────────────────┤
+│              Workflow Layer               │
+│          (LangGraph StateGraph)           │
+├──────────────────────────────────────────┤
+│   Nodes         │   Prompts               │
+│   (5 nodes)     │   (.txt files)          │
+├──────────────────────────────────────────┤
+│   Tools Layer                             │
+│   (Search + Web Reader)                  │
+├──────────────────────────────────────────┤
+│   LLM Layer                               │
+│   (BaseLLMClient + OpenAI Compatible)     │
+└──────────────────────────────────────────┘
 ```
 
-### Docker
+## 🔄 Workflow
 
-```bash
-docker build -t research-agent .
-docker run --rm -e DASHSCOPE_API_KEY=your-key research-agent "你的研究主题"
+```mermaid
+graph TD
+    START((START))
+    P[Planner<br/>topic → search_queries]
+    S[Search<br/>search_queries → search_results]
+    R[Reader<br/>search_results → web_pages]
+    SU[Summarizer<br/>web_pages → summary]
+    W[Writer<br/>summary → report]
+    END((END))
+
+    START --> P
+    P --> S
+    S --> R
+    R --> SU
+    SU --> W
+    W --> END
 ```
 
-## 项目结构
+| Step | Node | Function |
+|------|------|----------|
+| 1 | **Planner** | LLM generates 3–5 search keywords from your topic |
+| 2 | **Search** | Queries DuckDuckGo (or configured engine), deduplicates URLs |
+| 3 | **Reader** | Concurrently fetches pages, strips ads/navigation, extracts main content |
+| 4 | **Summarizer** | LLM synthesizes a cross-source summary |
+| 5 | **Writer** | LLM formats a Markdown report with sections and citations |
+
+---
+
+## 📁 Project Structure
 
 ```
 research-agent/
 ├── src/
 │   └── research_agent/
-│       ├── __init__.py
-│       ├── __main__.py          # CLI 入口
-│       ├── config.py            # 环境变量配置
-│       ├── state/               # LangGraph 状态定义
-│       ├── nodes/               # Graph 节点（planner / search / reader / summarizer / writer）
-│       ├── graph/               # StateGraph 组装
-│       ├── tools/               # 工具层（search / web_reader）
-│       ├── prompts/             # Prompt 模板（.txt 文件）
-│       └── llm/                 # LLM 客户端抽象（OpenAI Compatible）
-└── tests/                       # 单元测试
+│       ├── __main__.py          # CLI entry point
+│       ├── config.py            # pydantic-settings config (.env)
+│       ├── state/               # ResearchState (TypedDict)
+│       ├── nodes/               # 5 workflow nodes
+│       │   ├── planner.py       #   topic → search_queries
+│       │   ├── search_node.py   #   search_queries → search_results
+│       │   ├── reader.py        #   search_results → web_pages
+│       │   ├── summarizer.py    #   web_pages → summary
+│       │   └── writer.py        #   summary → report
+│       ├── graph/               # StateGraph assembly
+│       ├── tools/               # Search & Web Reader
+│       │   ├── search.py        #   BaseSearchClient + DuckDuckGo
+│       │   ├── web_reader.py    #   BaseWebReader + HtmlWebReader
+│       │   └── models.py        #   SearchResult, WebPage
+│       ├── prompts/             # LLM prompt templates (.txt)
+│       └── llm/                 # LLM abstraction layer
+│           ├── base.py          #   BaseLLMClient + LLMResponse
+│           ├── _openai.py       #   OpenAI-compatible implementation
+│           ├── factory.py       #   get_llm() factory
+│           └── errors.py        #   LLMError hierarchy
+├── tests/                       # pytest test suite
+├── scripts/                     # Development & testing scripts
+├── requirements.txt
+├── pyproject.toml
+├── ARCHITECTURE.md              # In-depth architecture docs
+└── README.md
 ```
 
-## Workflow
+---
 
-```mermaid
-graph LR
-    START --> Planner
-    Planner -->|search_queries| Search
-    Search -->|search_results| Reader
-    Reader -->|web_pages| Summarizer
-    Summarizer -->|summary| Writer
-    Writer -->|report| END
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.11+
+- A [DashScope](https://help.aliyun.com/dashscope) API key (or any OpenAI-compatible API key)
+
+### Installation
+
+```bash
+# Clone & enter
+git clone https://github.com/Zyuting/ai-research-agent.git
+cd ai-research-agent
+
+# Virtual environment
+python -m venv .venv
+source .venv/bin/activate       # Linux / macOS
+# .venv\Scripts\activate        # Windows
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Configure
+cp .env.example .env
+# Edit .env: set DASHSCOPE_API_KEY=your-key
 ```
 
-### 各节点职责
+### Run
 
-| Node | 输入 | 输出 | 职责 |
-|---|---|---|---|
-| **Planner** | topic | search_queries | 调用 LLM 生成 3~5 个搜索关键词 |
-| **Search** | search_queries | search_results | 搜索引擎批量查询，URL 去重 |
-| **Reader** | search_results | web_pages | 并发抓取网页，去除广告/导航 |
-| **Summarizer** | web_pages | summary | LLM 综合多来源生成摘要 |
-| **Writer** | summary | report | LLM 输出 Markdown 报告 |
+```bash
+python -m research_agent "Transformer architecture evolution"
+```
 
-## API 使用
+**Example output:**
+> An AI-generated report covering Transformer model architecture, attention mechanisms, and key evolutionary milestones — structured with sections, citations, and references.
+
+### Python API
 
 ```python
 from research_agent.graph import graph
 
-result = graph.invoke({"topic": "Python 异步编程"})
-print(result["report"])
+result = graph.invoke({"topic": "Rust in system programming"})
+print(result["report"])  # Markdown string
 ```
 
-## 配置
+---
 
-| 环境变量 | 默认值 | 说明 |
+## ⚙️ Configuration
+
+All settings via `.env` file:
+
+| Variable | Default | Description |
 |---|---|---|
-| `DASHSCOPE_API_KEY` | — | 通义千问 API Key |
-| `LLM_BASE_URL` | `https://dashscope.aliyuncs.com/compatible-mode/v1` | API 地址 |
-| `LLM_MODEL` | `qwen-plus` | 模型名称 |
-| `SEARCH_ENGINE` | `duckduckgo` | 搜索引擎 |
+| `DASHSCOPE_API_KEY` | — | Your LLM API key |
+| `LLM_BASE_URL` | `https://dashscope.aliyuncs.com/compatible-mode/v1` | API endpoint |
+| `LLM_MODEL` | `qwen-plus` | Model name |
+| `SEARCH_ENGINE` | `duckduckgo` | Search backend |
 
-### 切换模型
-
-只需修改 `.env` 文件即可切换到 GPT、DeepSeek 等：
+### Switch to GPT / DeepSeek
 
 ```env
 LLM_BASE_URL=https://api.openai.com/v1
 LLM_MODEL=gpt-4o-mini
-DASHSCOPE_API_KEY=sk-xxxxx   # 改为你的 OpenAI API Key
+DASHSCOPE_API_KEY=sk-xxxxx
 ```
 
-## 开发
+---
+
+## 🧪 Testing
 
 ```bash
-# 安装测试依赖
 pip install pytest
-
-# 运行测试
 pytest tests/ -v
-
-# 运行端到端测试
-python scripts/test_workflow.py "你的主题"
 ```
 
-## Roadmap
+```
+============================= test session starts =============================
+tests/test_config.py    ·· PASSED                                            [ 7%]
+tests/test_llm.py       ·· PASSED                                            [15%]
+tests/test_prompts.py   ···· PASSED                                          [46%]
+tests/test_tools.py     ···· PASSED                                          [84%]
+tests/test_workflow.py  ·· PASSED                                            [100%]
+========================= 13 passed in 39.55s ================================
+```
 
-### v0.1（当前）— MVP
+---
 
-- [x] 基础 LLM 客户端（OpenAI Compatible）
-- [x] DuckDuckGo 搜索
-- [x] HTML 网页抓取与正文提取
-- [x] LangGraph Workflow（Planner → Search → Reader → Summarizer → Writer）
-- [x] 单元测试
+## 🗺️ Roadmap
 
-### v0.2 — 稳定性与质量提升
+### v1.0 ✅ Current — MVP
 
-- [ ] Tavily / 多搜索引擎支持
-- [ ] 搜索结果质量评估
-- [ ] 读取失败自动重试与降级
-- [ ] 结构化日志
-- [ ] 异步化节点加速
+- [x] LLM abstraction layer (OpenAI-compatible)
+- [x] DuckDuckGo search integration
+- [x] HTML web reader with noise removal
+- [x] LangGraph workflow (Planner → Search → Reader → Summarizer → Writer)
+- [x] Unit test suite (13 tests)
 
-### v0.3 — 深度研究能力
+### v1.1 🔜 Next
 
-- [ ] Reflection：对搜索结果进行反思与补充搜索
-- [ ] 多轮搜索（根据已读内容自动生成追问）
-- [ ] 结果过滤与评分
+- [ ] Tavily / multi-engine search
+- [ ] Search quality scoring
+- [ ] Retry & fallback for failed reads
+- [ ] Structured logging
+- [ ] Async node execution for speed
 
-### v1.0 — 生产可用
+### v1.2 — Deeper Research
 
-- [ ] 多 Agent 协作（角分工）
-- [ ] Memory / 持久化
-- [ ] Web 界面 / API 服务
-- [ ] Human-in-the-Loop 审批
-- [ ] 多种报告格式（PDF、HTML）
+- [ ] Reflection: self-critique and re-search
+- [ ] Iterative query refinement
+- [ ] Source relevance filtering
+
+### v2.0 — Production Ready
+
+- [ ] Multi-agent collaboration
+- [ ] Research memory / persistence
+- [ ] Web UI / REST API
+- [ ] Human-in-the-loop review
+- [ ] PDF / HTML report export
+
+---
+
+## 🧩 Extensibility
+
+| Want to... | Do this |
+|---|---|
+| Add a search engine | `register_search_engine("tavily", TavilyClient)` |
+| Add a web reader | `register_web_reader("jina", JinaReader)` |
+| Change the LLM | Edit `.env` → `LLM_BASE_URL` + `LLM_MODEL` |
+| Add a workflow node | 1) Add field in `State` 2) Create node function 3) `add_node()` + `add_edge()` |
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed design docs.
+
+---
+
+## 🤝 Contributing
+
+PRs are welcome! For major changes, please open an issue first to discuss.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feat/amazing`)
+3. Run tests (`pytest tests/ -v`)
+4. Commit (`git commit -m 'feat: add amazing feature'`)
+5. Push (`git push origin feat/amazing`)
+6. Open a Pull Request
+
+## 📄 License
+
+[MIT](LICENSE) © 2026 Yueting Zhang

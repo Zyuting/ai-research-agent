@@ -1,4 +1,4 @@
-"""Report Writer Node - 根据摘要生成最终 Markdown 报告。"""
+"""Writer node — generates the final Markdown report from summary."""
 
 from __future__ import annotations
 
@@ -8,8 +8,8 @@ from research_agent.state import ResearchState
 
 
 def writer_node(state: ResearchState) -> dict:
-    """根据摘要生成 Markdown 报告。"""
-    summary = state.get("summary", "无内容。")
+    """Generate a structured Markdown report from the summary."""
+    summary = state.get("summary", "No content.")
     prompt = load_prompt("report_writer.txt", topic=state["topic"], summary=summary)
 
     llm = get_llm()

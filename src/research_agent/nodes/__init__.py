@@ -1,4 +1,8 @@
-"""Graph Nodes 统一导出。"""
+"""Workflow nodes — each node is a self-contained function.
+
+Nodes communicate only through ResearchState. Every node receives
+a ResearchState dict and returns a partial dict to be merged.
+"""
 
 from research_agent.nodes.planner import planner_node
 from research_agent.nodes.reader import reader_node

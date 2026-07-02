@@ -1,9 +1,9 @@
-"""LangGraph Workflow 组装。
+"""LangGraph workflow assembly.
 
-Workflow 流程：
+Flow:
   START → planner → search → reader → summarizer → writer → END
 
-每个节点都是独立的函数，通过 State 传递数据。
+Each node is an independent function. Data flows through ResearchState only.
 """
 
 from langgraph.graph import END, StateGraph
@@ -19,21 +19,21 @@ from research_agent.state import ResearchState
 
 
 def build_graph() -> StateGraph:
-    """构建 AI Research Agent 的 LangGraph。
+    """Build the AI Research Agent LangGraph.
 
     Returns:
-        编译好的 StateGraph（可直接调用 .invoke()）。
+        A compiled StateGraph — call .invoke() to run.
     """
     workflow = StateGraph(ResearchState)
 
-    # 注册节点
+    # Register nodes
     workflow.add_node("planner", planner_node)
     workflow.add_node("search", search_node)
     workflow.add_node("reader", reader_node)
     workflow.add_node("summarizer", summarizer_node)
     workflow.add_node("writer", writer_node)
 
-    # 设置边
+    # Wire edges
     workflow.set_entry_point("planner")
     workflow.add_edge("planner", "search")
     workflow.add_edge("search", "reader")
@@ -44,5 +44,5 @@ def build_graph() -> StateGraph:
     return workflow.compile()
 
 
-# 单例：全局共用同一个编译好的图
+# Singleton — reuse the compiled graph across invocations
 graph = build_graph()

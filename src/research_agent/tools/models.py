@@ -1,4 +1,4 @@
-"""Search 和 Web Reader 的统一数据模型。"""
+"""Data models for search and web reader tools."""
 
 from __future__ import annotations
 

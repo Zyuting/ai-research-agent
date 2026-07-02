@@ -1,4 +1,4 @@
-"""Planner Node - 根据用户输入的研究主题，生成搜索关键词。"""
+"""Planner node — generates search keywords from the user's topic."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from research_agent.state import ResearchState
 
 
 def planner_node(state: ResearchState) -> dict:
-    """根据主题生成 3~5 个搜索关键词。"""
+    """Generate 3-5 search queries from the research topic."""
     prompt = load_prompt("planner.txt", topic=state["topic"])
     llm = get_llm()
     resp = llm.invoke(prompt)

@@ -1,4 +1,4 @@
-"""Search Node - 使用搜索关键词批量搜索，聚合结果。"""
+"""Search node — batch queries search engine, deduplicate results."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from research_agent.tools import get_search_client
 
 
 def search_node(state: ResearchState) -> dict:
-    """遍历 search_queries 搜索，合并去重。"""
+    """Iterate through search_queries, merge and deduplicate results."""
     client = get_search_client()
     seen_urls: set[str] = set()
     all_results = []
@@ -17,7 +17,7 @@ def search_node(state: ResearchState) -> dict:
         try:
             results = client.search(query, max_results=5)
         except RuntimeError as e:
-            errors.append(f"搜索失败 [{query}]: {e}")
+            errors.append(f"Search failed [{query}]: {e}")
             continue
 
         for r in results:
