@@ -1,0 +1,13 @@
+[project]
+name = "research-agent"
+version = "0.1.0"
+description = "AI Research Agent based on LangGraph"
+requires-python = ">=3.11"
+dependencies = []
+
+[build-system]
+requires = ["setuptools>=69.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
