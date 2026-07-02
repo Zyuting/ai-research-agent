@@ -1,10 +1,10 @@
 ## v1.0.0 (2026-07-02)
 
-### 🎉 Initial Release — MVP
+### Initial Release — MVP
 
 The first public release of **Research Agent**, an AI-powered research assistant that automates the full research pipeline: search → read → summarize → write.
 
-### ✨ Features
+### Features
 
 - **End-to-end automation** — Input a topic, get a structured Markdown report
 - **LLM-powered planning** — Generates optimal search queries using Qwen / GPT / DeepSeek
@@ -14,7 +14,7 @@ The first public release of **Research Agent**, an AI-powered research assistant
 - **Model-agnostic** — Switch between Qwen, GPT, DeepSeek via single `.env` variable
 - **Modular architecture** — Abstract base classes + Registry pattern for easy extension
 
-### 🏗️ Architecture
+### Architecture
 
 ```
 5-layer decoupled design: CLI → LangGraph Workflow → Nodes + Prompts → Tools → LLM
@@ -22,7 +22,7 @@ The first public release of **Research Agent**, an AI-powered research assistant
 
 Workflow: `Planner (LLM) → Search (DuckDuckGo) → Reader (httpx+BS4) → Summarizer (LLM) → Writer (LLM)`
 
-### 💡 Technical Highlights
+### Technical Highlights
 
 - **LangGraph StateGraph** — DAG-driven workflow orchestration with typed state management
 - **Pluggable LLM layer** — Abstract `BaseLLMClient` with factory + Registry pattern. One `.env` change to swap providers
@@ -30,12 +30,12 @@ Workflow: `Planner (LLM) → Search (DuckDuckGo) → Reader (httpx+BS4) → Summ
 - **Intelligent content extraction** — HtmlWebReader auto-removes nav/ads, priority-falls back from `<article>` → `<main>` → `<body>`, auto-retries with alternate UA on 403
 - **Error isolation** — Each node runs independently. Failures are recorded in `errors[]` without crashing the graph
 
-### 🧪 Testing
+### Testing
 
 - 13 unit tests covering config, LLM, prompts, tools, and workflow
 - pytest-based, run with `pytest tests/ -v`
 
-### 📁 Project Structure
+### Project Structure
 
 ```
 research-agent/
@@ -53,7 +53,7 @@ research-agent/
 └── README.md
 ```
 
-### 📦 What's Included
+### What's Included
 
 - Full source code under `src/research_agent/`
 - 5 workflow nodes with single responsibility
@@ -63,7 +63,7 @@ research-agent/
 - Architecture documentation (ARCHITECTURE.md)
 - MIT License
 
-### ⚠️ Known Limitations
+### Known Limitations
 
 - DuckDuckGo search may be unreliable in regions where it is blocked (fallback: use a proxy or switch to Tavily/Google via the pluggable architecture)
 - Web reader may fail on sites with aggressive anti-bot protections (Cloudflare, etc.)

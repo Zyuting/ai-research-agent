@@ -1,6 +1,6 @@
 <div align="center">
 
-# Research Agent 🧠📄
+# Research Agent
 
 **AI-powered research assistant** — Input a topic, get a structured Markdown report.
 
@@ -15,7 +15,7 @@ Automates the full research pipeline: **search → read → summarize → write*
 
 ---
 
-## ✨ Features
+## Features
 
 - **End-to-end automation** — One topic in, full report out. No manual searching or reading.
 - **LLM-powered planning** — Generates optimal search queries from your topic.
@@ -27,7 +27,7 @@ Automates the full research pipeline: **search → read → summarize → write*
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 The project follows a **layered, decoupled architecture**:
 
@@ -50,7 +50,7 @@ The project follows a **layered, decoupled architecture**:
 └──────────────────────────────────────────┘
 ```
 
-## 🔄 Workflow
+## Workflow
 
 ```mermaid
 graph TD
@@ -80,7 +80,7 @@ graph TD
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 research-agent/
@@ -116,7 +116,7 @@ research-agent/
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -163,7 +163,7 @@ print(result["report"])  # Markdown string
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 All settings via `.env` file:
 
@@ -184,7 +184,7 @@ DASHSCOPE_API_KEY=sk-xxxxx
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ```bash
 pip install pytest
@@ -203,9 +203,9 @@ tests/test_workflow.py  ·· PASSED                                            [
 
 ---
 
-## 🗺️ Roadmap
+## Roadmap
 
-### v1.0 ✅ Current — MVP
+### v1.0 Current — MVP
 
 - [x] LLM abstraction layer (OpenAI-compatible)
 - [x] DuckDuckGo search integration
@@ -213,7 +213,7 @@ tests/test_workflow.py  ·· PASSED                                            [
 - [x] LangGraph workflow (Planner → Search → Reader → Summarizer → Writer)
 - [x] Unit test suite (13 tests)
 
-### v1.1 🔜 Next
+### v1.1 Next
 
 - [ ] Tavily / multi-engine search
 - [ ] Search quality scoring
@@ -237,7 +237,7 @@ tests/test_workflow.py  ·· PASSED                                            [
 
 ---
 
-## 🧩 Extensibility
+## Extensibility
 
 | Want to... | Do this |
 |---|---|
@@ -250,7 +250,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed design docs.
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 PRs are welcome! For major changes, please open an issue first to discuss.
 
@@ -261,6 +261,6 @@ PRs are welcome! For major changes, please open an issue first to discuss.
 5. Push (`git push origin feat/amazing`)
 6. Open a Pull Request
 
-## 📄 License
+## License
 
 [MIT](LICENSE) © 2026 Yueting Zhang
