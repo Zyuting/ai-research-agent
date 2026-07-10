@@ -1,12 +1,11 @@
 <div align="center">
 
-# Research Agent
+# AI Research Agent — Agent Workflow System
 
-**AI-powered research assistant** — Input a topic, get a structured Markdown report.
-Automates the full research pipeline: **search → read → summarize → write**.
+**An LLM-powered agent workflow** that autonomously decomposes research tasks, executes multi-step tool calls, and produces structured deliverables. Designed with modular agent architecture — planning, tool integration, and LLM-based analysis.
 
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
-[![LangGraph](https://img.shields.io/badge/LangGraph-%20-purple)](https://langchain-ai.github.io/langgraph/)
+[![LangGraph](https://img.shields.io/badge/LangGraph-Agent%20Workflow-purple)](https://langchain-ai.github.io/langgraph/)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
 </div>
@@ -15,37 +14,64 @@ Automates the full research pipeline: **search → read → summarize → write*
 
 ## Overview
 
-Research Agent is a modular, LLM-powered system that autonomously researches any topic and produces a structured report. It orchestrates a 5-stage LangGraph pipeline with pluggable search engines, web readers, and LLM providers.
+This project implements an **AI Agent workflow system** for automated research. Given a topic, the agent autonomously decomposes the task, searches the web, reads and extracts content from multiple sources, analyzes findings via LLM, and generates a structured Markdown report.
 
-## Architecture
-
-The system follows a layered, decoupled design:
+The system demonstrates core agent engineering concepts: **task decomposition**, **tool calling** (web search + content extraction), **multi-step workflow orchestration**, and **modular tool integration** — all through a clean, extensible architecture.
 
 ```
-CLI Layer          (__main__.py)
-Workflow Layer     (LangGraph StateGraph)
-Node Layer         (Planner → Search → Reader → Summarizer → Writer)
-Tool Layer         (Search + Web Reader engines)
-LLM Layer          (BaseLLMClient + OpenAI-compatible providers)
+User Topic → [Planner Agent] → Search Queries → [Search Tool] → Results
+  → [Reader Tool] → Web Content → [Analyzer Agent] → Summary → [Writer Agent] → Report
 ```
 
-### Workflow
+## Architecture: Agent Workflow Design
+
+The system implements a **layered, decoupled agent architecture**:
 
 ```
-topic → [Planner] → search_queries → [Search] → search_results → [Reader]
-→ web_pages → [Summarizer] → summary → [Writer] → report
+┌─────────────────────────────────────────────────────┐
+│                    CLI Layer                         │
+├─────────────────────────────────────────────────────┤
+│              Workflow Layer (LangGraph)              │
+│    StateGraph orchestrating multi-step execution     │
+├─────────────────────────────────────────────────────┤
+│   Node Layer (Planner → Search → Reader → Writer)   │
+│      Each node = single responsibility agent step    │
+├─────────────────────────────────────────────────────┤
+│              Tool Layer (Pluggable)                  │
+│     Search engines + Web readers as callable tools   │
+├─────────────────────────────────────────────────────┤
+│           LLM Layer (Provider-Agnostic)              │
+│   Abstract client + Factory + Registry pattern       │
+└─────────────────────────────────────────────────────┘
 ```
 
-Each node has a single responsibility and communicates exclusively through `ResearchState` (TypedDict), enabling independent error isolation and easy extensibility.
+### Agent Workflow: Step by Step
 
-## Features
+1. **Planner Agent** — Receives user topic, generates targeted search queries via LLM
+2. **Search Tool** — Executes queries via configurable search engine (DuckDuckGo/Tavily/Google)
+3. **Reader Tool** — Fetches and extracts main content from web pages, strips noise, handles errors
+4. **Analyzer Agent** — LLM-powered summarization and analysis of retrieved content
+5. **Writer Agent** — Synthesizes all findings into structured Markdown report with citations
 
-- **LLM-powered planning** — Generates optimal search queries from your topic
-- **Multi-engine search** — DuckDuckGo built-in (zero config), pluggable for Tavily, Google, etc.
-- **Intelligent web reading** — Extracts main content, strips noise, auto-fallback on 403
-- **Model-agnostic LLM layer** — Switch between Qwen, GPT, DeepSeek via single `.env` variable. Abstract base + factory + Registry pattern
-- **Structured reports** — Markdown with sections, citations, and references
-- **13 unit tests** covering config, LLM, prompts, tools, and workflow
+## Key Agent Engineering Features
+
+### Tool Calling & Integration
+
+- **Modular tool registration** — `register_search_engine()` / `register_web_reader()` pattern for pluggable tool integration
+- **Tool abstraction layer** — Consistent interface across different tool providers
+- **Error isolation** — Each tool call handles failures independently; auto-fallback on HTTP errors
+
+### Multi-Step Task Execution
+
+- **StateGraph workflow** — LangGraph-powered orchestration with typed state (ResearchState TypedDict)
+- **Sequential node execution** — Each agent node completes before the next begins
+- **Independent error handling** — Per-node error isolation prevents cascading failures
+
+### LLM Integration
+
+- **Provider-agnostic design** — Abstract BaseLLMClient with Factory + Registry pattern
+- **Switchable backends** — Qwen, GPT, DeepSeek via single environment variable
+- **OpenAI-compatible API** — Works with any provider supporting the OpenAI API standard
 
 ## Quick Start
 
@@ -54,10 +80,10 @@ Each node has a single responsibility and communicates exclusively through `Rese
 pip install -r requirements.txt
 
 # Configure
-cp .env.example .env   # set DASHSCOPE_API_KEY
+cp .env.example .env   # set LLM_API_KEY
 
-# Run
-python -m research_agent "Transformer architecture evolution"
+# Run the agent
+python -m research_agent "Impact of AI on urban planning"
 ```
 
 ### Python API
@@ -65,20 +91,28 @@ python -m research_agent "Transformer architecture evolution"
 ```python
 from research_agent.graph import graph
 
+# Invoke the agent workflow
 result = graph.invoke({"topic": "Rust in system programming"})
 print(result["report"])
 ```
 
-## Extensibility
+## Extensibility: Adding Tools & Capabilities
 
 | Want to... | Do this |
 |---|---|
 | Add a search engine | `register_search_engine("tavily", TavilyClient)` |
 | Add a web reader | `register_web_reader("jina", JinaReader)` |
-| Change the LLM | Edit `.env` → `LLM_BASE_URL` + `LLM_MODEL` |
-| Add a workflow node | 1) Add field in `State` 2) Create node function 3) `add_node()` + `add_edge()` |
+| Switch LLM provider | Edit `.env`: `LLM_BASE_URL` + `LLM_MODEL` |
+| Add workflow node | 1) Add field in `State` 2) Create node function 3) `add_node()` + `add_edge()` |
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed design docs.
+## Test Coverage
+
+- **13 unit tests** covering agent configuration, LLM client, prompts, tool layer, and workflow graph
+- Isolated testing of each agent node and tool component
+
+## Keywords
+
+`Agent Workflow` `Tool Calling` `Function Calling` `LLM API Integration` `Multi-Step Task Execution` `LangGraph` `AI Agent` `Research Automation` `Pluggable Architecture` `LLM Application`
 
 ## License
 
